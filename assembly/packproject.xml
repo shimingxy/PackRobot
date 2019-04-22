@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 	xmlns="http://www.springframework.org/schema/beans"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:mvc="http://www.springframework.org/schema/mvc"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:p="http://www.springframework.org/schema/p"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:util="http://www.springframework.org/schema/util"
+		xsi:schemaLocation="
+	        http://www.springframework.org/schema/beans     
+	        http://www.springframework.org/schema/beans/spring-beans.xsd
+	        http://www.springframework.org/schema/context 
+	        http://www.springframework.org/schema/context/spring-context.xsd
+	        http://www.springframework.org/schema/tx 
+	        http://www.springframework.org/schema/tx/spring-tx.xsd
+	        http://www.springframework.org/schema/util     
+	        http://www.springframework.org/schema/util/spring-util.xsd
+	        http://www.springframework.org/schema/mvc 
+	        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+ 	   
+    <!-- Application properties configs  -->
+	<bean id="propertySourcesPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+	  <property name="locations">
+	    <list>
+	   	  <value>/assembly/config.properties</value>
+	    </list>
+	  </property>
+	  <property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean>
+	
+	<!-- enable component scanning (beware that this does not enable mapper scanning!) -->    
+    <context:component-scan base-package="com.connsec.dao.service" />
+ 	
+ 	<bean id="packJarProject" class="com.packrobot.PackMavenProject">
+ 		<property name="modifyListFilePath" value="#{systemProperties['APPRUNNER_PATH']}/export/"/>
+ 		<property name="projectTyppe" value="jar"/> 
+ 		<property name="projectPath" value="d:/svn11/"/> 
+ 		<property name="projectName" value="packcore"/> 
+ 		<property name="targetPath" value="d:/svnpp/packweb/WEB-INF/classes/"/> 
+ 		<property name="relPath" value="packparent/packcore/"/> 
+ 	</bean>
+ 	
+ 	<bean id="packWebProject" class="com.packrobot.PackMavenProject">
+ 		<property name="modifyListFilePath" value="#{systemProperties['APPRUNNER_PATH']}/export/"/>
+ 		<property name="projectTyppe" value="war"/> 
+ 		<property name="projectPath" value="d:/svn11/"/> 
+ 		<property name="projectName" value="packweb"/> 
+ 		<property name="targetPath" value="d:/svnpp/packweb/"/> 
+ 		<property name="relPath" value="packparent/packweb/"/> 
+ 		<property name="webappPath" value="packparent/packweb/src/main/webapp/"/>
+ 	</bean>
+ 	
+ 	<!-- 配置执行的任务列表  -->
+ 	<util:list id="businessTask" list-class="java.util.ArrayList">
+ 		 <ref bean="packWebProject"/>
+ 		 <ref bean="packJarProject"/> 
+ 	</util:list>
+ 	
+</beans>

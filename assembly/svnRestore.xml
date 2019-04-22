@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 	xmlns="http://www.springframework.org/schema/beans"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:mvc="http://www.springframework.org/schema/mvc"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:p="http://www.springframework.org/schema/p"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:util="http://www.springframework.org/schema/util"
+		xsi:schemaLocation="
+	        http://www.springframework.org/schema/beans     
+	        http://www.springframework.org/schema/beans/spring-beans.xsd
+	        http://www.springframework.org/schema/context 
+	        http://www.springframework.org/schema/context/spring-context.xsd
+	        http://www.springframework.org/schema/tx 
+	        http://www.springframework.org/schema/tx/spring-tx.xsd
+	        http://www.springframework.org/schema/util     
+	        http://www.springframework.org/schema/util/spring-util.xsd
+	        http://www.springframework.org/schema/mvc 
+	        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+ 	   
+    <!-- Application properties configs  -->
+	<bean id="propertySourcesPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+	  <property name="locations">
+	    <list>
+	   	  <value>/assembly/config.properties</value>
+	    </list>
+	  </property>
+	  <property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean>
+	
+	<!-- enable component scanning (beware that this does not enable mapper scanning!) -->    
+    <context:component-scan base-package="com.connsec.dao.service" />
+ 	
+ 	<bean id="svnAdapter" class="com.packrobot.svn.javahl.JavahlAdapter">
+		<property name="svnUrl" value="${svn.url}"/>
+ 		<property name="svnUser" value="${svn.user}"/> 
+ 		<property name="svnPass" value="${svn.pass}"/> 
+ 		<property name="localSVNPath" value="${svn.local}"/>  		
+ 	</bean>
+ 	
+ 	<bean id="svnRestore" class="com.packrobot.svn.SvnRestore">
+ 		<property name="svn" ref="svnAdapter"/>
+ 		<property name="repositoryDir" value="trunk/"/> 
+ 		<property name="revision" value="57"/> 
+		<!-- <property name="url" value="${source.datasource.url}"/>
+ 		<property name="user" value="${source.datasource.username}"/> 
+ 		<property name="configFilePath" value="#{systemProperties['APPRUNNER_PATH']}/conf/rwms_db_rollback_sagov.sql"/>
+ 		<property name="exportFilePath" value="#{systemProperties['APPRUNNER_PATH']}/export/db/rwms_db_rollback_sagov.sql"/>
+ 		 -->
+ 	</bean>
+ 	
+ 	<!-- 配置执行的任务列表  -->
+ 	<util:list id="businessTask" list-class="java.util.ArrayList">
+ 		 <ref bean="svnRestore"/>
+ 	</util:list>
+ 	
+</beans>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 	xmlns="http://www.springframework.org/schema/beans"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:mvc="http://www.springframework.org/schema/mvc"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:p="http://www.springframework.org/schema/p"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:util="http://www.springframework.org/schema/util"
+		xsi:schemaLocation="
+	        http://www.springframework.org/schema/beans     
+	        http://www.springframework.org/schema/beans/spring-beans.xsd
+	        http://www.springframework.org/schema/context 
+	        http://www.springframework.org/schema/context/spring-context.xsd
+	        http://www.springframework.org/schema/tx 
+	        http://www.springframework.org/schema/tx/spring-tx.xsd
+	        http://www.springframework.org/schema/util     
+	        http://www.springframework.org/schema/util/spring-util.xsd
+	        http://www.springframework.org/schema/mvc 
+	        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+ 	   
+    <!-- Application properties configs  -->
+	<bean id="propertySourcesPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+	  <property name="locations">
+	    <list>
+	   	  <value>/assembly/config.properties</value>
+	    </list>
+	  </property>
+	  <property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean>
+	
+	<!-- enable component scanning (beware that this does not enable mapper scanning!) -->    
+    <context:component-scan base-package="com.packrobot" />
+ 	
+ 	<!-- Datastore configuration  -->
+ 	<import resource="database.xml"/>
+ 	
+ 	<!-- 备份以下的表
+ 		PUB_TABLE_COLUMNS
+ 		PUB_TABLE_INDEXES
+ 		PUB_TABLE_CONS
+ 		PUB_SOURCE
+ 		PUB_VIEWS
+ 	 -->
+ 	<bean id="deleteDbDescribeBackup" class="com.packrobot.ddl.oracle.DbDescribeBackup">
+ 		<property name="dataSource" ref="sourceDataSource"/>
+		<property name="sqlBackupSource" value="
+DELETE FROM PUB_TABLE_COLUMNS WHERE PUBLISHDATE='_BACKUP_DATE_';
+DELETE FROM PUB_TABLE_INDEXES WHERE PUBLISHDATE='_BACKUP_DATE_';
+DELETE FROM PUB_TABLE_CONS WHERE PUBLISHDATE='_BACKUP_DATE_';
+DELETE FROM PUB_SOURCE WHERE PUBLISHDATE='_BACKUP_DATE_';
+DELETE FROM PUB_VIEWS WHERE PUBLISHDATE='_BACKUP_DATE_';
+		"/>
+ 	</bean>
+ 	
+ 	<bean id="dbDescribeBackup" class="com.packrobot.ddl.oracle.DbDescribeBackup">
+ 		<property name="dataSource" ref="sourceDataSource"/>
+		<property name="sqlBackupSource" value="
+INSERT INTO PUB_TABLE_COLUMNS
+  SELECT T.OWNER,
+         T.TABLE_NAME,
+         C.COMMENTS AS TABLECOMMENTS,
+         COL.COLUMN_NAME,
+         COL.DATA_TYPE,
+         COL.DATA_LENGTH,
+         COL.DATA_SCALE,
+         COL.DATA_PRECISION,
+         COLC.COMMENTS AS COLUMNCOMMENTS,
+         COL.NULLABLE,
+         TO_LOB(COL.DATA_DEFAULT) DATA_DEFAULT,
+         '_BACKUP_DATE_' PUBLISHDATE
+    FROM SYS.ALL_ALL_TABLES   T,
+         SYS.ALL_TAB_COMMENTS C,
+         SYS.ALL_TAB_COLUMNS  COL,
+         SYS.ALL_COL_COMMENTS COLC
+   WHERE T.TABLE_NAME = C.TABLE_NAME
+     AND COL.TABLE_NAME = T.TABLE_NAME
+     AND COLC.TABLE_NAME = T.TABLE_NAME
+     AND COL.COLUMN_NAME = COLC.COLUMN_NAME
+     AND (T.OWNER = 'TESTUSER' )
+     AND T.OWNER=C.OWNER
+     AND T.OWNER=COL.OWNER
+     AND T.OWNER=COLC.OWNER
+   ORDER BY T.OWNER, T.TABLE_NAME, COL.COLUMN_ID;
+
+INSERT INTO PUB_TABLE_INDEXES 
+  SELECT DISTINCT T.TABLE_OWNER,
+                  T.INDEX_NAME,
+                  T.TABLE_NAME,
+                  T.COLUMN_NAME,
+                  T.COLUMN_POSITION,
+                  I.TABLESPACE_NAME,
+                  I.UNIQUENESS,
+                  '_BACKUP_DATE_' PUBLISHDATE
+    FROM SYS.ALL_IND_COLUMNS T, SYS.ALL_INDEXES I
+   WHERE T.INDEX_NAME = I.INDEX_NAME
+     AND T.TABLE_NAME = I.TABLE_NAME
+     AND (T.TABLE_OWNER = 'TESTUSER')
+   ORDER BY T.TABLE_OWNER, TABLE_NAME, INDEX_NAME, COLUMN_POSITION;
+
+INSERT INTO PUB_TABLE_CONS 
+  SELECT AC.OWNER,
+         AC.CONSTRAINT_NAME,
+         AC.CONSTRAINT_TYPE,
+         AC.TABLE_NAME,
+         ACC.COLUMN_NAME,
+         ACC.POSITION,
+         '_BACKUP_DATE_' PUBLISHDATE
+    FROM SYS.ALL_CONSTRAINTS AC, SYS.ALL_CONS_COLUMNS ACC
+   WHERE AC.OWNER = ACC.OWNER
+     AND AC.CONSTRAINT_NAME = ACC.CONSTRAINT_NAME
+     AND (AC.OWNER = 'TESTUSER')
+     AND ACC.POSITION IS NOT NULL
+   ORDER BY AC.CONSTRAINT_NAME, ACC.POSITION;
+
+INSERT INTO PUB_SOURCE 
+  SELECT DISTINCT SC.OWNER,
+                  SC.NAME,
+                  SC.TYPE,
+                  SC.LINE,
+                  SC.TEXT,
+                  '_BACKUP_DATE_' PUBLISHDATE
+    FROM SYS.ALL_SOURCE SC
+   WHERE (SC.OWNER = 'TESTUSER' )
+  ;
+  
+INSERT INTO PUB_VIEWS 
+  SELECT AV.OWNER,
+         AV.VIEW_NAME,
+         TO_LOB(AV.TEXT) TEXT,
+         '_BACKUP_DATE_' PUBLISHDATE
+    FROM SYS.ALL_VIEWS AV
+   WHERE (AV.OWNER = 'TESTUSER');
+		
+		"/>
+ 	</bean>
+ 	<!-- 配置执行的任务列表  -->
+ 	<util:list id="businessTask" list-class="java.util.ArrayList">
+ 	 	<ref bean="deleteDbDescribeBackup"/>
+ 		<ref bean="dbDescribeBackup"/>
+ 	</util:list>
+ 	
+</beans>
