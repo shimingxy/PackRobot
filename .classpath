@@ -4,19 +4,6 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="lib" path="lib/pinyin4j-2.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/quartz-2.2.3.jar"/>
-	<classpathentry kind="lib" path="lib/spring-aop-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-aspects-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-beans-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-context-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-context-support-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-core-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-expression-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-instrument-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-instrument-tomcat-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-jdbc-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-orm-4.3.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-security-crypto-3.2.9.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-tx-4.3.9.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/activation-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/aopalliance.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-150.jar"/>
@@ -50,6 +37,13 @@
 	<classpathentry kind="lib" path="lib/org.tmatesoft.sqljet_1.1.10.r1317_v20140121_0107.jar"/>
 	<classpathentry kind="lib" path="lib/ff2client.jar"/>
 	<classpathentry kind="lib" path="lib/org.tigris.subversion.clientadapter.javahl_1.8.15.jar"/>
+	<classpathentry kind="lib" path="lib/spring-aop-5.1.6.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-beans-5.1.6.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-context-5.1.6.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-context-indexer-5.1.6.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-core-5.1.6.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-expression-5.1.6.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-security-crypto-5.1.5.RELEASE.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
