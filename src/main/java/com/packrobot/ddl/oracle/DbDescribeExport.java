@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -684,6 +686,95 @@ public class DbDescribeExport  implements BusinessTask{
 		stmt.close();
 	}
 	
+	public ArrayList<TableColumns > buildMetaData(ResultSet rs) throws SQLException{
+		ArrayList<TableColumns > listTableColumns=new ArrayList<TableColumns > ();
+		ResultSetMetaData metaData = rs.getMetaData();
+		for (int i = 1; i <= metaData.getColumnCount(); i++) {
+			TableColumns tc=new TableColumns();
+			tc.setColumnName(metaData.getColumnName(i));
+			tc.setDataType(metaData.getColumnTypeName(i));
+			tc.setTableName(metaData.getTableName(i));
+			tc.setDataPrecision(metaData.getPrecision(i));
+			tc.setDataScale(metaData.getScale(i));
+			_logger.info("--No. "+i+" , Column "+tc.getColumnName()+" , DataType "+tc.getDataType() );
+			listTableColumns.add(tc);
+		}
+		return listTableColumns;
+	}
+	
+	
+	public void batchInsert(String schema ,String tableName,String whereSql) throws Exception{
+		Connection targetConn=this.dataSource.getConnection();
+		targetConn.setAutoCommit(false);
+		Statement stmt = targetConn.createStatement();
+		ResultSet rs=stmt.executeQuery("SELECT * FROM "+schema+"."+tableName+" "+whereSql);
+		ArrayList<TableColumns > listTableColumns=buildMetaData(rs);
+		String rowColumns=null;
+		for(TableColumns tc : listTableColumns) {
+			if(rowColumns==null) {
+				rowColumns=tc.getColumnName();
+			}else {
+				rowColumns+=rowColumns + " , " + tc.getColumnName();
+			}
+		}
+		long insertNum=0;
+		while(rs.next()){
+			int pos=1;
+			StringBuffer rowValues= new StringBuffer();
+			for(TableColumns tc : listTableColumns){
+				
+				String value=" NULL ";
+				//_logger.info("--column "+tc.getColumnName()+" , "+tc.getDataType() );
+				if(tc.getDataType().equalsIgnoreCase("VARCHAR2")||
+						tc.getDataType().equalsIgnoreCase("VARCHAR")||
+						tc.getDataType().equalsIgnoreCase("NVARCHAR2")||
+						tc.getDataType().equalsIgnoreCase("CHAR")||
+						tc.getDataType().equalsIgnoreCase("RAW")||
+						tc.getDataType().equalsIgnoreCase("ROWID")
+						){
+					if(rs.getString(tc.getColumnName())!=null){
+						value="'"+ rs.getString(tc.getColumnName())+"'";
+					}
+				}else if(tc.getDataType().equalsIgnoreCase("NUMBER")){
+					if(rs.getString(tc.getColumnName())!=null){
+						if(tc.getDataLength()==22&&tc.getDataScale()>0){//NUMBER
+							value=rs.getLong(tc.getColumnName())+"";
+						}else if(tc.getDataLength()==22&&tc.getDataScale()==0){//INTEGER
+							value=rs.getInt(tc.getColumnName())+"";
+						}else if(tc.getDataPrecision()==0||tc.getDataScale()==0||tc.getDataScale()==0){//LONG
+							value=rs.getLong(tc.getColumnName())+"";
+						}else{//DOUBLE
+							value=rs.getDouble(tc.getColumnName())+"";
+						}
+					}
+				}else if(tc.getDataType().equalsIgnoreCase("DATE")){
+					//TODO:
+				}else if(	tc.getDataType().equalsIgnoreCase("BLOB")||
+						tc.getDataType().equalsIgnoreCase("CLOB")||
+						tc.getDataType().equalsIgnoreCase("NCLOB")||
+						tc.getDataType().equalsIgnoreCase("LONG")||
+						tc.getDataType().equalsIgnoreCase("BINARY_DOUBLE")||
+						tc.getDataType().equalsIgnoreCase("BINARY_FLOAT")
+					){
+				
+				}
+				
+				if(pos==1) {
+					rowValues.append(value);
+				}else {
+					rowValues.append(" , ").append(value);
+				}
+				pos++;
+			}
+			out.write(("INSERT INTO "+schema+"."+tableName+" ( "+rowColumns+" ) VALUES ( "+rowValues+" ) ;\r\n").getBytes());
+			insertNum++;
+		}
+		out.write(("COMMIT ;\r\n").getBytes());
+		out.write(("-- "+schema+"."+tableName+" Data Export Count +"+insertNum+" \r\n").getBytes());
+		stmt.close();
+		targetConn.close();
+	}
+	
 	public void  readExportData(String filePath) throws Exception{
 		File txtFile=new File(filePath);
 		if(txtFile.exists()){
@@ -730,6 +821,9 @@ public class DbDescribeExport  implements BusinessTask{
 					}else if(	param[3].toUpperCase().equals("FOREIGN")) {
 						//TODO
 					}else if(	param[0].toUpperCase().equals("BACKUP")) {
+						out.write(("SELECT '***************备份表 "+param[1]+"."+param[2]+"*****************' FROM DUAL;\n").getBytes());
+						out.write(("CREATE TABLE "+param[1]+"."+param[2]+"_"+System.getenv().get("PUBLISH_DATE")+" AS SELECT * FROM "+param[1]+"."+param[2]+";\n\n").getBytes());
+					}else if(	param[0].toUpperCase().equals("DATA")) {
 						out.write(("SELECT '***************备份表 "+param[1]+"."+param[2]+"*****************' FROM DUAL;\n").getBytes());
 						out.write(("CREATE TABLE "+param[1]+"."+param[2]+"_"+System.getenv().get("PUBLISH_DATE")+" AS SELECT * FROM "+param[1]+"."+param[2]+";\n\n").getBytes());
 					}else if(	param[0].toUpperCase().equals("FILE")) {
