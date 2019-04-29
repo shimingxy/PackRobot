@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -747,8 +748,10 @@ public class DbDescribeExport  implements BusinessTask{
 							value=rs.getDouble(tc.getColumnName())+"";
 						}
 					}
-				}else if(tc.getDataType().equalsIgnoreCase("DATE")){
-					//TODO:
+				}else if(tc.getDataType().equalsIgnoreCase("DATE")||
+						tc.getDataType().toUpperCase().startsWith("TIMESTAMP")
+						){
+					value="TO_DATE('"+(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(rs.getTimestamp(tc.getColumnName())))+"','dd-mm-yyyy hh24:mi:ss')";
 				}else if(	tc.getDataType().equalsIgnoreCase("BLOB")||
 						tc.getDataType().equalsIgnoreCase("CLOB")||
 						tc.getDataType().equalsIgnoreCase("NCLOB")||
