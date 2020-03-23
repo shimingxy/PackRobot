@@ -29,13 +29,11 @@ import com.hansky.core.str.Str;
 import com.hansky.core.util.NotificationProducer;
 import com.hansky.intf.rmc.session.IRMCClientSession;
 import com.hansky.intf.util.IProducer;
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
 
 public class FireflyAdapter {
 	private static final Logger _logger = LoggerFactory.getLogger(FireflyAdapter.class);
 	ArrayList<FireflyNode> nodeList=new ArrayList<FireflyNode>();
 	
-	  private Hashtable pathNodeCache = new Hashtable();
 	public FireflyAdapter() {
 		
 	}
