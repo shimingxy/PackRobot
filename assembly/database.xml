@@ -19,23 +19,20 @@
 
 	<!-- dataSource define begin -->
 	<!-- c3p0 configuration -->
-	<bean id="sourceDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"  destroy-method="close" >      
-	    <property name="driverClass" value="${source.datasource.driverclass}"/>      
-	    <property name="jdbcUrl" value="${source.datasource.url}"/>      
-	    <property name="user" value="${source.datasource.username}"/>      
+	<bean id="sourceDataSource" class="com.alibaba.druid.pool.DruidDataSource"  destroy-method="close" >      
+	    <property name="url" value="${source.datasource.url}"/>      
+	    <property name="username" value="${source.datasource.username}"/>      
 	    <property name="password" value="${source.datasource.password}"/>      
 	</bean> 
 	
-	<bean id="sourceDataSource_rwuser" class="com.mchange.v2.c3p0.ComboPooledDataSource"  destroy-method="close" >      
-	    <property name="driverClass" value="${source.datasource.driverclass}"/>      
-	    <property name="jdbcUrl" value="${source.datasource.url}"/>      
-	    <property name="user" value="${source.datasource.username}"/>      
+	<bean id="sourceDataSource_rwuser" class="com.alibaba.druid.pool.DruidDataSource"  destroy-method="close" >       
+	    <property name="url" value="${source.datasource.url}"/>      
+	    <property name="username" value="${source.datasource.username}"/>      
 	    <property name="password" value="${source.datasource.password}"/>      
 	</bean>
 	
-	<bean id="sourceDataSource_rwmsuser" class="com.mchange.v2.c3p0.ComboPooledDataSource"  destroy-method="close" >      
-	    <property name="driverClass" value="${source.datasource.driverclass}"/>      
-	    <property name="jdbcUrl" value="${source.datasource.url}"/>      
+	<bean id="sourceDataSource_rwmsuser" class="com.alibaba.druid.pool.DruidDataSource"  destroy-method="close" >    
+	    <property name="username" value="${source.datasource.url}"/>      
 	    <property name="user" value="${source_rwmsuser.datasource.username}"/>      
 	    <property name="password" value="${source_rwmsuser.datasource.password}"/>      
 	</bean> 
